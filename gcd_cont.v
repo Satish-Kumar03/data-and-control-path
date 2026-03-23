@@ -60,7 +60,7 @@ module GCDcont(ldA, ldB, sel1, sel2, sel_in, done, lt, gt, eq, data_in, clk, sta
                 #3 ldA=1; ldB=0;
             end
             else if(lt) begin
-                sel1=1; sel2=0; sel_in=1;
+                sel1=1; sel2=0; sel_in=0;
                 #3 ldA=0; ldB=1;
             end
           end
@@ -71,7 +71,7 @@ module GCDcont(ldA, ldB, sel1, sel2, sel_in, done, lt, gt, eq, data_in, clk, sta
                 #3 ldA=1; ldB=0;
             end
             else if(lt) begin
-                sel1=1; sel2=0; sel_in=1;
+                sel1=1; sel2=0; sel_in=0;
                 #3 ldA=0; ldB=1;
             end
           end
