@@ -15,8 +15,8 @@ module gcdtest;
     always #5 clk = ~clk;
 
     initial begin
-        #12 data_in = 143;
-        #10 data_in = 78;
+        #12 data_in = 143;      // put your data here 
+        #10 data_in = 78;       // put here data
     end
 
     initial begin
