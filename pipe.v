@@ -1,7 +1,7 @@
 module mypipe (
     A,B,C,D,F,clk
 );
-  parameter N= 8;
+  parameter N = 8;
   output [N-1:0] F;
   input [N-1:0] A,B,C,D;
   input clk;
