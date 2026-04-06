@@ -9,8 +9,13 @@ module pipetest;
   initial clk=0;
   always #5 clk = ~clk;
 
+  always @(posedge clk) begin
+    #1; 
+    $display("Time=%0t | a=%d, b=%d, c=%d, d=%d | f=%d", $time, A, B, C, D, F); // it will print the output on the same line 
+  end                                                                            // to avoid confusion due to pipeline latency.
+  
   initial begin
-    $monitor($time, "a=%d, b=%d, c=%d, d=%d, f=%d", A,B,C,D,F);
+    // $monitor($time, "a=%d, b=%d, c=%d, d=%d, f=%d", A,B,C,D,F);    prints output with pipeline latency. 
    #3 A=2;B=3;C=4;D=2;
    #10 A=20;B=3;C=7;D=2;
    #10 A=2;B=3;C=42;D=6;
