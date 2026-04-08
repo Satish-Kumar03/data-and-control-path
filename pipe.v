@@ -9,7 +9,7 @@ module mypipe (
 
   assign F = l45_F;
 
-  always @(posedge clk ) begin
+    always @(posedge clk ) begin           // change of functionality 
     l23_x1 <= A*B;
     l23_x2 <= C-D;
     l23_A <= A;
