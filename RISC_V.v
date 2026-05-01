@@ -34,7 +34,7 @@ module ricsv(clk1,clk2);
       ID_EX_NPC <= IF_ID_NPC;
       ID_EX_A <= reg_bank[IF_ID_IR[25:21]];
       ID_EX_B <= reg_bank[IF_ID_IR[20:16]];
-      ID_EX_IMM <= {,IF_ID_IMM};                 // sign extension pending 
+      ID_EX_IMM <= {{16{IF_ID_IMM[15]}},IF_ID_IMM[15:0]};                 // sign extension pending 
     end
 
   always @(posedge clk1)
