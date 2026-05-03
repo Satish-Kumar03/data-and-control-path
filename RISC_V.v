@@ -39,7 +39,24 @@ module ricsv(clk1,clk2);
 
   always @(posedge clk1)
     begin
-      
+      case(EX_MEM_IR[31:26])
+        ADD,SUB,OR,AND,SLT,HLT : EX_MEM_type <= RR_ALU;
+        ADDI,SUBI,SLTI : ID_EX_type <= RM_ALU;
+        LW : ID_EX_type <= LOAD;
+        SW : ID_EX_type <= STORE;
+        BEQZ, BNEQZ : ID_EX_type <= BRANCH;
+        HLT : ID_EX_type <= HALT;
+        default : ID_EX_type <= HALT;
+      endcase 
+    end 
+
+  
+  begin 
+    case(EX_MEM_type)
+      begin 
+        RR_ALU : begin 
+          case(ID_EX_IR[31:26])
+            ADD : 
   
   
   
