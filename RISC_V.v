@@ -39,6 +39,9 @@ module ricsv(clk1,clk2);
 
   always @(posedge clk1)
     begin
+      EX_MEM_IR <= MEM_WB_IR;
+      EX_MEM_type <= MEM_WB_type;
+      
       case(EX_MEM_IR[31:26])
         ADD,SUB,OR,AND,SLT,HLT : EX_MEM_type <= RR_ALU;
         ADDI,SUBI,SLTI : ID_EX_type <= RM_ALU;
@@ -63,6 +66,7 @@ module ricsv(clk1,clk2);
             SLT : EX-MEM_ALUout <= ID_EX_A < ID_EX_B ? 1 : 0;
             MUL : EX-MEM_ALUout <= ID_EX_A * ID_EX_B;
             HLT : EX-MEM_ALUout <= ID_EX_A - ID_EX_B; 
+            default EX_MEM_ALUout <= 32'hxxxxxxxx;
           endcase
         end
         RM_ALU : begin 
@@ -70,6 +74,7 @@ module ricsv(clk1,clk2);
             ADDI : EX_MEM_ALUout <= ID_EX_A + ID_EX_IMM;
             SUBI : EX_MEM_ALUout <= ID_EX_A + ID_EX_IMM;
             SLTI : EX_MEM_ALUout <= ID_EX_A<ID_EX_IMM ? 1 : 0;
+            default : EX_MEM_ALUout <= 32'hxxxxxxxx;
           endcase
         end 
         LOAD, STORE : begin
@@ -83,8 +88,27 @@ module ricsv(clk1,clk2);
       end
     endcase
   end
-  
-          
+
+  always @(posedge clk2)
+    begin 
+      MEM_WB_IR <= EX_MEM_IR;
+      MEM_WB_type <= EX_MEM_type;
+      case(EX_MEM_type)
+         RR_ALU, RM_ALU : begin 
+           MEM_WB_ALUout <= EX_MEM_ALUout;
+         end
+        LOAD : begin
+          MEM_WB_LMD <= mem[EX_MEM_ALUout];
+        end
+        STORE : begin
+          mem[EX_MEM_ALUout] <= EX_MEM_B;
+        end
+      endcase
+    end
+
+  always @(posedge clk1)
+    begin
+      
         
         
 endmodule 
