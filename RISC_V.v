@@ -52,12 +52,28 @@ module ricsv(clk1,clk2);
 
   
   begin 
-    case(EX_MEM_type)
+    case(ID_EX_type)
       begin 
         RR_ALU : begin 
           case(ID_EX_IR[31:26])
-            ADD : 
-  
-  
-  
+            ADD : EX_MEM_ALUout <= ID_EX_A + ID_EX_B;
+            SUB : EX-MEM_ALUout <= ID_EX_A - ID_EX_B;
+            AND : EX-MEM_ALUout <= ID_EX_A & ID_EX_B;
+            OR : EX-MEM_ALUout <= ID_EX_A | ID_EX_B;
+            SLT : EX-MEM_ALUout <= ID_EX_A < ID_EX_B ? 1 : 0;
+            MUL : EX-MEM_ALUout <= ID_EX_A * ID_EX_B;
+            HLT : EX-MEM_ALUout <= ID_EX_A - ID_EX_B; 
+          endcase
+        end
+        RM_ALU : begin 
+          case(ID_EX_IR[31:26])
+            ADDI : EX_MEM_ALUout <= ID_EX_A + ID_EX_IMM;
+            SUBI : EX_MEM_ALUout <= ID_EX_A + ID_EX_IMM;
+            SLTI : EX_MEM_ALUout <= ID_EX_A<ID_EX_IMM ? 1 : 0;
+          endcase
+        end 
+        LOAD : begin
+          EX_MEM_ALUout <= ID_EX_A + ID_EX_IMM;
+        
+        
 endmodule 
