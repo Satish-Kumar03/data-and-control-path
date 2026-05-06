@@ -14,7 +14,7 @@ module ricsv(clk1,clk2);
   reg [data_size-1:0] ID_EX_A,ID_EX_B,ID_EX_IR, ID_EX_IMM;       // for exceution stage
   // reg ID_EX_NPC;
   
-  reg [data_size-1:0] EX_MEM_ALUout, EX_MEM_B, EX_MEM_IR;            //  for memory stage
+  reg [data_size-1:0] EX_MEM_ALUout, EX_MEM_B, EX_MEM_IR, EX_MEM_NPC;            //  for memory stage
   reg EX_MEM_COND;
   
   reg [data_size-1:0] MEM_WB_LMD, MEM_WB_IR, MEM_WB_B, MEM_WB_ALUout;     // forwrite back stage 
@@ -72,8 +72,19 @@ module ricsv(clk1,clk2);
             SLTI : EX_MEM_ALUout <= ID_EX_A<ID_EX_IMM ? 1 : 0;
           endcase
         end 
-        LOAD : begin
-          EX_MEM_ALUout <= ID_EX_A + ID_EX_IMM;
+        LOAD, STORE : begin
+          EX_MEM_B <= ID_EX_A + ID_EX_IMM;
+        end
+        BRANCH : begin
+          EX_MEM_ALUout <= ID_EX_NPC + ID_EX_IMM;
+          EX_MEM_COND <= (ID_EX_A == 0);
+        end 
+        endcase
+      end
+    endcase
+  end
+  
+          
         
         
 endmodule 
