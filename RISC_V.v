@@ -116,9 +116,9 @@ module ricsv(clk1,clk2);
     if(BR_TAKEN == 0)
       begin
         case (MEM_WB_type)
-          RR_ALU : MEM_WB_IR[15:11] <= MEM_WB_ALUout;
-          RM_ALU : MEM_WB_IR[20:16] <= MEM_WB_ALUout;
-          LOAD : MEM_WB_LMD <= EX_MEM_LMD;
+          RR_ALU : reg_bank[MEM_WB_IR[15:11]] <= MEM_WB_ALUout;
+          RM_ALU : reg_bank[MEM_WB_IR[20:16]] <= MEM_WB_ALUout;
+          LOAD : reg_bank[MEM_WB_IR[20:16]] <= EX_MEM_LMD;
           HALT : HALTED <= 1'b1;
         endcase
       end
