@@ -108,7 +108,10 @@ module ricsv(clk1,clk2);
 
   always @(posedge clk1)
     begin
-      
+      case (MEM_WB_type)
+        RR_ALU : MEM_WB_IR[15:11] <= MEM_WB_ALUout;
+        RM_ALU : MEM_WB_IR[20:16] <= MEM_WB_ALUout;
+        LOAD : MEM_WB_LMD 
         
         
 endmodule 
