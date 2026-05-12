@@ -68,7 +68,7 @@ module ricsv(clk1,clk2);
           RR_ALU : begin 
             case(ID_EX_IR[31:26])
               ADD : EX_MEM_ALUout <= ID_EX_A + ID_EX_B;
-              SUB : EX-MEM_ALUout <= ID_EX_A - ID_EX_B;
+              SUB : EX-MEM_ALUout <= ID_EX_A - ID_EX_B;                    // adding comments 
               AND : EX-MEM_ALUout <= ID_EX_A & ID_EX_B;
               OR : EX-MEM_ALUout <= ID_EX_A | ID_EX_B;
               SLT : EX-MEM_ALUout <= ID_EX_A < ID_EX_B ? 1 : 0;
