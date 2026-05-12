@@ -1,7 +1,9 @@
 module ricsv(clk1,clk2);
   parameter data_size = 32, mem_size = 1024;
-  parameter ADD=6'b000000, SUB=6'b000001, AND=6'b000010, OR=6'b000011, SLT=6'b000100, MUL=6'b000101, HLT=6'b111111,   // R-R type 
-            LW=6'b001000, SW=6'b001001, ADDI=6'b001010, SUBI=6'b001011, SLTI=6'b001100, BNEQZ=6'b001101, BEQZ=6'b001110;  // R-I type
+  parameter ADD=6'b000000, SUB=6'b000001, AND=6'b000010, OR=6'b000011, SLT=6'b000100, MUL=6'b000101, XOR=6'b000110, SLL= 6'b000111, 
+            SRL=6'b001000, HLT=6'b111111,   // R-R type 
+            LW=6'b001000, SW=6'b001001, ADDI=6'b001010, SUBI=6'b001011, SLTI=6'b001100, BNEQZ=6'b001101, BEQZ=6'b001110, XORI=6'b001111
+            SLLI=6'b010000, SRLI=6'b010001;  // R-I type
   parameter RR_ALU = 3'b000, RM_ALU=3'b001, LOAD=3'b010, STORE=3'b011, BRANCH=3'b100, HALT=3'b101;
   
   input clk1, clk2;
@@ -49,8 +51,8 @@ module ricsv(clk1,clk2);
         EX_MEM_type <= MEM_WB_type;
         
         case(EX_MEM_IR[31:26])
-          ADD,SUB,OR,AND,SLT,HLT : EX_MEM_type <= RR_ALU;
-          ADDI,SUBI,SLTI : ID_EX_type <= RM_ALU;
+          ADD,SUB,OR,AND,SLT,XOR,SLL,SRL,HLT : EX_MEM_type <= RR_ALU;
+          ADDI,SUBI,SLTI,XORI,SLLI,SRLI : ID_EX_type <= RM_ALU;
           LW : ID_EX_type <= LOAD;
           SW : ID_EX_type <= STORE;
           BEQZ, BNEQZ : ID_EX_type <= BRANCH;
@@ -71,6 +73,9 @@ module ricsv(clk1,clk2);
               OR : EX-MEM_ALUout <= ID_EX_A | ID_EX_B;
               SLT : EX-MEM_ALUout <= ID_EX_A < ID_EX_B ? 1 : 0;
               MUL : EX-MEM_ALUout <= ID_EX_A * ID_EX_B;
+              XOR : EX_MEM_ALUout <= ID_EX_A ^ ID_EX_B;
+              SLL : EX_MEM_ALUout <= ID_EX_A << ID_EX_B;
+              SRL : EX_MEM_ALUout <= ID_EX_A >> ID_EX_B;
               default EX_MEM_ALUout <= 32'hxxxxxxxx;
             endcase
           end
@@ -79,6 +84,9 @@ module ricsv(clk1,clk2);
               ADDI : EX_MEM_ALUout <= ID_EX_A + ID_EX_IMM;
               SUBI : EX_MEM_ALUout <= ID_EX_A + ID_EX_IMM;
               SLTI : EX_MEM_ALUout <= ID_EX_A<ID_EX_IMM ? 1 : 0;
+              XORI : EX_MEM_ALUout <= ID_EX_A ^ ID_EX_IMM;
+              SLLI : EX_MEM_ALUout <= ID_EX_A << ID_EX_IMM;
+              SRLI : EX_MEM_ALUout <= ID_EX_A >> ID_EX_IMM;              
               default : EX_MEM_ALUout <= 32'hxxxxxxxx;
             endcase
           end 
