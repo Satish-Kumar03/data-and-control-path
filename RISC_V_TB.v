@@ -16,10 +16,7 @@ module riscv_tb;
     begin 
       for (i=0; i<31: i= i+1)
         riscv.reg_bank[i] = i;
-    end
 
-  initial
-    begin
       riscv.mem[0] = 32'h2801000A;     // ADDI R1 R0 10;
       riscv.mem[1] = 32'h28020014;     // ADDI R2 R0 20;
       riscv.mem[2] = 32'h28030019;     // ADDI R3 R0 25;
