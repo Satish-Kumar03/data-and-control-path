@@ -16,8 +16,8 @@ module riscv(clk1,clk2);
   
   reg [data_size-1:0] IF_ID_IR, IF_ID_NPC, PC;                               // for instruction fetch and instruction decode stage
   
-  reg [data_size-1:0] ID_EX_A,ID_EX_B,ID_EX_IR, ID_EX_IMM;                  // for exceution stage
-  reg ID_EX_NPC;
+  reg [data_size-1:0] ID_EX_A,ID_EX_B,ID_EX_IR, ID_EX_IMM, ID_EX_NPC;                  // for exceution stage
+  //reg ID_EX_NPC;
   
   reg [data_size-1:0] EX_MEM_ALUout, EX_MEM_B, EX_MEM_IR, EX_MEM_NPC;                   //  for memory stage
   reg EX_MEM_COND;
@@ -30,15 +30,15 @@ module riscv(clk1,clk2);
       begin 
         if((EX_MEM_COND == 1 && EX_MEM_IR[31:26] == BEQZ) || (EX_MEM_COND == 0 && EX_MEM_IR[31:26] == BNEQZ))
         begin
-            IF_ID_IR <= mem[EX_MEM_ALUout];
-            IF_ID_NPC <= EX_MEM_ALUout + 1;
-            PC <= EX_MEM_ALUout + 1;
-            BR_TAKEN <= 1'b1;
+            IF_ID_IR <= #2 mem[EX_MEM_ALUout];
+            IF_ID_NPC <= #2 EX_MEM_ALUout + 1;
+            PC <=  #2 EX_MEM_ALUout + 1;
+            BR_TAKEN <= #2 1'b1;
         end
         else begin
-          IF_ID_IR <= mem[PC];
-            IF_ID_NPC <= PC+1;  
-            PC <= PC+1;  
+          IF_ID_IR <= #2 mem[PC];
+            IF_ID_NPC <= #2 PC+1;  
+            PC <= #2 PC+1;  
         end   
       end
   end 
@@ -47,11 +47,11 @@ module riscv(clk1,clk2);
   begin                                                                   // ID stage
     if (HALTED == 0) 
       begin
-        ID_EX_IR <= IF_ID_IR;
-        ID_EX_NPC <= IF_ID_NPC;
-        ID_EX_A <= reg_bank[IF_ID_IR[25:21]];
-        ID_EX_B <= reg_bank[IF_ID_IR[20:16]];
-        ID_EX_IMM <= {{16{IF_ID_IR[15]}},IF_ID_IR[15:0]};                              // sign extension pending 
+        ID_EX_IR <= #2 IF_ID_IR;
+        ID_EX_NPC <= #2 IF_ID_NPC;
+        ID_EX_A <= #2 reg_bank[IF_ID_IR[25:21]];
+        ID_EX_B <= #2 reg_bank[IF_ID_IR[20:16]];
+        ID_EX_IMM <= #2 {{16{IF_ID_IR[15]}},IF_ID_IR[15:0]};                              // sign extension pending 
       end
   end
 
@@ -59,59 +59,60 @@ module riscv(clk1,clk2);
     begin                                                                 // EX stage 
     if(HALTED ==0)
       begin
-        EX_MEM_IR <= ID_EX_IR;
-        EX_MEM_type <= ID_EX_type;
-        
+       begin
         case(EX_MEM_IR[31:26])
-          ADD,SUB,OR,AND,SLT,XOR,SLL,SRL,HLT : ID_EX_type <= RR_ALU;
-          ADDI,SUBI,SLTI,XORI,SLLI,SRLI : ID_EX_type <= RM_ALU;
-          LW : ID_EX_type <= LOAD;
-          SW : ID_EX_type <= STORE;
-          BEQZ, BNEQZ : ID_EX_type <= BRANCH;
-          HLT : ID_EX_type <= HALT;
-          default : ID_EX_type <= HALT;
+          ADD,SUB,OR,AND,SLT,XOR,SLL,SRL,HLT : ID_EX_type <= #2 RR_ALU;
+          ADDI,SUBI,SLTI,XORI,SLLI,SRLI : ID_EX_type <= #2 RM_ALU;
+          LW : ID_EX_type <= #2 LOAD;
+          SW : ID_EX_type <= #2 STORE;
+          BEQZ, BNEQZ : ID_EX_type <= #2 BRANCH;
+          HLT : ID_EX_type <= #2 HALT;
+          default : ID_EX_type <= #2 HALT; 
         endcase 
-      end 
-  
+       end 
+     
     
     begin 
       case(ID_EX_type)
           RR_ALU : begin 
             case(ID_EX_IR[31:26])
-              ADD : EX_MEM_ALUout <= ID_EX_A + ID_EX_B;
-              SUB : EX_MEM_ALUout <= ID_EX_A - ID_EX_B;                    // adding comments 
-              AND : EX_MEM_ALUout <= ID_EX_A & ID_EX_B;
-              OR : EX_MEM_ALUout <= ID_EX_A | ID_EX_B;
-              SLT : EX_MEM_ALUout <= ID_EX_A < ID_EX_B ? 1 : 0;
-              MUL : EX_MEM_ALUout <= ID_EX_A * ID_EX_B;
-              XOR : EX_MEM_ALUout <= ID_EX_A ^ ID_EX_B;
-              SLL : EX_MEM_ALUout <= ID_EX_A << ID_EX_B;
-              SRL : EX_MEM_ALUout <= ID_EX_A >> ID_EX_B;
-              default EX_MEM_ALUout <= 32'hxxxxxxxx;
+              ADD : EX_MEM_ALUout <= #2 ID_EX_A + ID_EX_B;
+              SUB : EX_MEM_ALUout <= #2 ID_EX_A - ID_EX_B;                    // adding comments 
+              AND : EX_MEM_ALUout <= #2 ID_EX_A & ID_EX_B;
+              OR : EX_MEM_ALUout <= #2 ID_EX_A | ID_EX_B;
+              SLT : EX_MEM_ALUout <= #2 ID_EX_A < ID_EX_B ? 1 : 0;
+              MUL : EX_MEM_ALUout <= #2 ID_EX_A * ID_EX_B;
+              XOR : EX_MEM_ALUout <= #2 ID_EX_A ^ ID_EX_B;
+              SLL : EX_MEM_ALUout <= #2 ID_EX_A << ID_EX_B;
+              SRL : EX_MEM_ALUout <= #2 ID_EX_A >> ID_EX_B;
+              default EX_MEM_ALUout <= #2 32'hxxxxxxxx;
             endcase
           end
           RM_ALU : begin 
             case(ID_EX_IR[31:26])
-              ADDI : EX_MEM_ALUout <= ID_EX_A + ID_EX_IMM;
-              SUBI : EX_MEM_ALUout <= ID_EX_A - ID_EX_IMM;
-              SLTI : EX_MEM_ALUout <= ID_EX_A < ID_EX_IMM ? 1 : 0;
-              XORI : EX_MEM_ALUout <= ID_EX_A ^ ID_EX_IMM;
-              SLLI : EX_MEM_ALUout <= ID_EX_A << ID_EX_IMM;
-              SRLI : EX_MEM_ALUout <= ID_EX_A >> ID_EX_IMM;              
-              default : EX_MEM_ALUout <= 32'hxxxxxxxx;
+              ADDI : EX_MEM_ALUout <= #2 ID_EX_A + ID_EX_IMM;
+              SUBI : EX_MEM_ALUout <= #2 ID_EX_A - ID_EX_IMM;
+              SLTI : EX_MEM_ALUout <= #2 ID_EX_A < ID_EX_IMM ? 1 : 0;
+              XORI : EX_MEM_ALUout <= #2 ID_EX_A ^ ID_EX_IMM;
+              SLLI : EX_MEM_ALUout <= #2 ID_EX_A << ID_EX_IMM;
+              SRLI : EX_MEM_ALUout <= #2 ID_EX_A >> ID_EX_IMM;              
+              default : EX_MEM_ALUout <= #2 32'hxxxxxxxx;
             endcase
           end 
           LOAD, STORE : begin
-            EX_MEM_B <= ID_EX_A + ID_EX_IMM;
+            EX_MEM_B <= #2 ID_EX_A + ID_EX_IMM;
           end
           BRANCH : begin
-            EX_MEM_ALUout <= ID_EX_NPC + ID_EX_IMM;
-            EX_MEM_COND <= (ID_EX_A == 0);
+            EX_MEM_ALUout <= #2 ID_EX_NPC + ID_EX_IMM;
+            EX_MEM_COND <= #2 (ID_EX_A == 0);
           end 
       endcase
     end
-  end
 
+        EX_MEM_IR <= #2 ID_EX_IR;
+        EX_MEM_type <= #2 ID_EX_type;
+  end
+    end
   always @(posedge clk2)                                                                  // MEM stage 
     begin 
       MEM_WB_IR <= EX_MEM_IR;
