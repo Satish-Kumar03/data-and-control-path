@@ -25,7 +25,7 @@ module riscv(clk1,clk2);
   reg [data_size-1:0] MEM_WB_LMD, MEM_WB_IR, MEM_WB_B, MEM_WB_ALUout;                   // forwrite back stage 
 
   always @(posedge clk1)   
-  begin                                                                  // IF stage 
+                                                                   // IF stage 
     if(HALTED == 0)
       begin 
         if((EX_MEM_COND == 1 && EX_MEM_IR[31:26] == BEQZ) || (EX_MEM_COND == 0 && EX_MEM_IR[31:26] == BNEQZ))
@@ -41,26 +41,18 @@ module riscv(clk1,clk2);
             PC <= #2 PC+1;  
         end   
       end
-  end 
 
   always @(posedge clk2)
-  begin                                                                   // ID stage
+                                                                    // ID stage
     if (HALTED == 0) 
       begin
-        ID_EX_IR <= #2 IF_ID_IR;
-        ID_EX_NPC <= #2 IF_ID_NPC;
         ID_EX_A <= #2 reg_bank[IF_ID_IR[25:21]];
         ID_EX_B <= #2 reg_bank[IF_ID_IR[20:16]];
-        ID_EX_IMM <= #2 {{16{IF_ID_IR[15]}},IF_ID_IR[15:0]};                              // sign extension pending 
-      end
-  end
+        ID_EX_IMM <= #2 {{16{IF_ID_IR[15]}},IF_ID_IR[15:0]};  
+        ID_EX_IR <= #2 IF_ID_IR;
+        ID_EX_NPC <= #2 IF_ID_NPC;
 
-  always @(posedge clk1)
-    begin                                                                 // EX stage 
-    if(HALTED ==0)
-      begin
-       begin
-        case(EX_MEM_IR[31:26])
+        case(IF_ID_IR[31:26])
           ADD,SUB,OR,AND,SLT,XOR,SLL,SRL,HLT : ID_EX_type <= #2 RR_ALU;
           ADDI,SUBI,SLTI,XORI,SLLI,SRLI : ID_EX_type <= #2 RM_ALU;
           LW : ID_EX_type <= #2 LOAD;
@@ -69,10 +61,13 @@ module riscv(clk1,clk2);
           HLT : ID_EX_type <= #2 HALT;
           default : ID_EX_type <= #2 HALT; 
         endcase 
-       end 
-     
-    
-    begin 
+
+      end
+
+  always @(posedge clk1)                                                               // EX stage 
+    if(HALTED ==0)
+      begin 
+      
       case(ID_EX_type)
           RR_ALU : begin 
             case(ID_EX_IR[31:26])
@@ -100,20 +95,23 @@ module riscv(clk1,clk2);
             endcase
           end 
           LOAD, STORE : begin
-            EX_MEM_B <= #2 ID_EX_A + ID_EX_IMM;
+            EX_MEM_ALUout <= #2 ID_EX_A + ID_EX_IMM;
+            EX_MEM_B <= #2 ID_EX_B;
           end
           BRANCH : begin
             EX_MEM_ALUout <= #2 ID_EX_NPC + ID_EX_IMM;
             EX_MEM_COND <= #2 (ID_EX_A == 0);
           end 
       endcase
-    end
+    
 
-        EX_MEM_IR <= #2 ID_EX_IR;
-        EX_MEM_type <= #2 ID_EX_type;
-  end
-    end
-  always @(posedge clk2)                                                                  // MEM stage 
+            EX_MEM_IR <= #2 ID_EX_IR;
+            EX_MEM_type <= #2 ID_EX_type;
+            BR_TAKEN <= #2 0;
+     end
+
+  always @(posedge clk2)  
+   if(HALTED ==0)                                                                // MEM stage 
     begin 
       MEM_WB_IR <= EX_MEM_IR;
       MEM_WB_type <= EX_MEM_type;
@@ -125,7 +123,7 @@ module riscv(clk1,clk2);
           MEM_WB_LMD <= mem[EX_MEM_ALUout];
         end
         STORE : begin
-          if(BR_TAKEN ==0)
+          if(BR_TAKEN == 0)
             mem[EX_MEM_ALUout] <= EX_MEM_B;
         end
       endcase
